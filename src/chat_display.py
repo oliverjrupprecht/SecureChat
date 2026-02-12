@@ -18,8 +18,19 @@ class ChatDisplay():
         with open(self.tmp_location, "a") as f:
             f.write(f"\n{self.user_name}: {prompt}\n")
 
-    def add_model_chat(self):
-        pass
+    def add_model_header(self):
+        with open(self.tmp_location, "a") as f:
+            f.write(f"\n{self.model_name}: ")
+            f.flush()
+
+    def add_model_chat(self, token : str):
+        with open(self.tmp_location, "a") as f:
+            f.write(token)
+            f.flush()
+            
+
+
+
 
 if __name__ == "__main__":
     cd = ChatDisplay("../tmp/chat_history.md", "gemma", "ollie")

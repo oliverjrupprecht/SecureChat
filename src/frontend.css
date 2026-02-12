@@ -1,21 +1,18 @@
 Input {
-	align-vertical: bottom;
-	border: double darkblue;
-	background: blue;
+	dock: bottom;
+	border: round grey;
+	background: black;
 }
 
 Markdown {
-	background: blue;
+	height: 1fr;
+	border: round grey;
+	background: black;
 }
 
 Header {
-	background: darkblue;
+	dock: top;
 }
 
-Footer {
-	background: darkblue;
-}
 
-SecureChatApp {
-	background: darkblue;
-}
+
