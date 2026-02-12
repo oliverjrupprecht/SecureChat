@@ -1,0 +1,21 @@
+Input {
+	align-vertical: bottom;
+	border: double darkblue;
+	background: blue;
+}
+
+Markdown {
+	background: blue;
+}
+
+Header {
+	background: darkblue;
+}
+
+Footer {
+	background: darkblue;
+}
+
+SecureChatApp {
+	background: darkblue;
+}
