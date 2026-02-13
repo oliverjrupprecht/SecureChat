@@ -32,7 +32,7 @@ class OllamaInterface():
         if not response.ok:
             raise Exception(f"{self.MODEL} could not be unloaded")
 
-    def send_prompt(self, prompt : str, stream : bool):
+    def query_model(self, prompt : str, stream : bool):
         payload = {
           "model": self.MODEL,
           "prompt": prompt,

@@ -1,45 +1,81 @@
 from chat_display import ChatDisplay
 from interface import OllamaInterface
 
-from textual import on
+from textual import on, work
 from pathlib import Path
 from textual.app import App
-from textual.widgets import Header, Input, Markdown
+from textual.widgets import Header, Input, Markdown, Static, LoadingIndicator
+from textual.containers import ScrollableContainer
 
-class SecureChatApp(App):
-    MARKDOWN_PATH =  Path(__file__).parent / "../tmp/chat_history.md" 
+CONTEXT_WINDOW = 80
+SYSTEM_PROMPT = """You are a helpful and concise AI Assistant. You are currently running inside a Terminal User Interface (TUI) built with the Textual framework.
+
+In the conversation history provided:
+- The human is identified as "User:".
+- You are identified as "Assistant:".
+
+Rules for your responses:
+1. ALWAYS adhere to the "Assistant:" persona. Never refer to yourself as "System" or "AI".
+2. Use Markdown for structure. Use bolding for emphasis and code blocks for any technical snippets.
+3. Be concise. Terminal screens have limited space; avoid unnecessary "fluff" or long introductory sentences.
+4. If the user asks for code, provide it in a way that is easy to read in a terminal environment.
+5. Do not include your own label "Assistant:" in the text of your response; the UI handles the labeling."
+            """
+
+
+class LocalChat(App):
     CSS_PATH = "./frontend.css"
     BINDINGS = []
 
     def on_mount(self) -> None:
-            self.chat_logger = ChatDisplay("../tmp/chat_history.md", "model", "ollie")
-            self.llm_interface = OllamaInterface("gemma3:4b", "http://localhost:11434/api/generate")
+        self.interface = OllamaInterface("gemma3:4b", "http://localhost:11434/api/generate")
+        self.system_prompt = SYSTEM_PROMPT
+        self.chat_history = []
+        self.context = ""
 
-            self.update_content() 
-            self.set_interval(1, self.update_content) # updates md viewer periodically
+    def compose(self): # visible components of the application
+        yield Header(name="LocalChat", show_clock=True) 
+        yield ScrollableContainer(id="container")
+        yield Input(placeholder="Waiting for prompt...", id="inp")
 
-    def compose(self): # where you put all the visible functions of the app
-        yield Header(show_clock=True, name="LocalChat")
-        yield Markdown(id="md")
-        yield Input(placeholder="Insert prompt here", id="inp")
+    @on(Input.Submitted) 
+    def write_user_input(self, event: Input.Submitted):
+        if (event.value == ""): return # disregard empty chats
 
-    def update_content(self) -> None:
-        content = self.MARKDOWN_PATH.read_text()
-        markdown_widget = self.query_one("#md", Markdown) # grab the widget
-        markdown_widget.update(content)
+        self.update_history(event.value, "User")
 
-    @on(Input.Submitted)
-    async def write_input(self, event: Input.Submitted):
-        self.chat_logger.add_user_chat(event.value)
+        user_input = "\n".join(self.chat_history[-CONTEXT_WINDOW:])
+        input = self.query_one("#inp", Input)
+        input.clear() # clears the input widget
 
-        inp = self.query_one("#inp", Input)
-        inp.clear()
+        chat_container = self.query_one("#container")
 
-        self.chat_logger.add_model_header()
-        async for chunk in self.llm_interface.send_prompt(event.value, True):
-            self.chat_logger.add_model_chat(chunk)
+        user_chat = Markdown(markdown=event.value, classes="user")
+        chat_container.mount(user_chat)
+        user_chat.scroll_visible() # scroll so new chat is visible
 
+        self.run_model_query(user_input)
+
+    @work(thread=True) # signals func to run on a new thread 
+    def run_model_query(self, user_input: str) -> None:
+        response = str(self.interface.query_model(prompt=user_input, stream=False))
+        
+        self.update_history("Assistant: ", response)
+        self.call_from_thread(self.display_response, response)
+
+    def display_response(self, text: str) -> None:
+        chat_container = self.query_one("#container")
+        model_chat = Markdown(markdown=text, classes="model")
+        chat_container.mount(model_chat)
+        model_chat.scroll_visible()
+
+    def update_history(self, role : str, chat : str):
+        out = f"\n{role}: {chat}"
+        self.chat_history.append(out)
+        self.context += out
+        if len(self.context) > CONTEXT_WINDOW:
+            self.context = self.context[:-CONTEXT_WINDOW]
 
 if __name__ == "__main__":
-    app = SecureChatApp()
+    app = LocalChat()
     app.run()

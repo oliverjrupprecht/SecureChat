@@ -1,0 +1,4 @@
+#!/usr/bin/env
+
+source .venv/bin/activate
+python src/main.py

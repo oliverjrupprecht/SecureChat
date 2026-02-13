@@ -5,13 +5,26 @@ Input {
 }
 
 Markdown {
-	height: 1fr;
-	border: round grey;
 	background: black;
+	height: auto;       /* Grow to fit content */
+    	min-height: 1;      /* Never be shorter than 5 rows */
+}
+
+Markdown.model {
+	border: round red;
+}
+
+Markdown.user {
+	border: round blue;
 }
 
 Header {
 	dock: top;
+	background: black;
+}
+
+LocalChat {
+	background: black;
 }
 
 
