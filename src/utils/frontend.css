@@ -18,6 +18,10 @@ Markdown.user {
 	border: round blue;
 }
 
+RuGPT {
+	background: black;
+}
+
 Header {
 	dock: top;
 	background: black;
