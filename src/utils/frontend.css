@@ -1,4 +1,5 @@
 Input {
+	height: 3;
 	dock: bottom;
 	border: round grey;
 	background: black;
@@ -10,6 +11,19 @@ Markdown {
     	min-height: 1;      /* Never be shorter than 5 rows */
 }
 
+LoadingIndicator {
+	dock: bottom;
+	height: 3;
+	background: black;
+}
+
+ScrollableContainer {
+	scrollbar-gutter: stable;
+	scrollbar-size: 1 1;
+	scrollbar-color: grey;
+	background: black;
+}
+
 Markdown.model {
 	border: round red;
 }
@@ -18,18 +32,9 @@ Markdown.user {
 	border: round blue;
 }
 
-RuGPT {
-	background: black;
-}
-
 Header {
 	dock: top;
 	background: black;
 }
-
-LocalChat {
-	background: black;
-}
-
 
 

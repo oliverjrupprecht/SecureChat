@@ -18,11 +18,15 @@ class LocalChat(App):
     def on_mount(self) -> None:
         self.chat_history = []
         client.load_model(MODEL, API_URL)
+        loader = self.query_one("#loader", LoadingIndicator)
+        loader.display = False 
+
 
     def compose(self): # visible components of the application
         yield Header(name="LocalChat", show_clock=True) 
         yield ScrollableContainer(id="container")
         yield Input(placeholder="Waiting for prompt...", id="inp")
+        yield LoadingIndicator(id="loader")
 
     @on(Input.Submitted) 
     def write_user_input(self, event: Input.Submitted):
@@ -34,6 +38,10 @@ class LocalChat(App):
 
         input = self.query_one("#inp", Input)
         input.clear() # clears the input widget
+        #input.display = False
+
+        loader = self.query_one("#loader", LoadingIndicator)
+        loader.display = True
 
         chat_container = self.query_one("#container")
 
@@ -50,6 +58,12 @@ class LocalChat(App):
         self.call_from_thread(self.display_response_and_update_history, response)
 
     def display_response_and_update_history(self, text: str) -> None:
+        loader = self.query_one("#loader")
+        loader.display = False
+
+        #input = self.query_one("#inp")
+        #input.display = True
+        
         chat_container = self.query_one("#container")
         model_chat = Markdown(markdown=text, classes="model")
         chat_container.mount(model_chat)
