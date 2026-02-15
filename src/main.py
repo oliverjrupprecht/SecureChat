@@ -21,6 +21,8 @@ class LocalChat(App):
         loader = self.query_one("#loader", LoadingIndicator)
         loader.display = False 
 
+    def on_unmount(self) -> None:
+        client.unload_model(MODEL, API_URL)
 
     def compose(self): # visible components of the application
         yield Header(name="LocalChat", show_clock=True) 
